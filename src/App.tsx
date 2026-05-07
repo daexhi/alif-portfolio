@@ -93,9 +93,12 @@ export default function App() {
   const [copiedType, setCopiedType] = useState<string | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isVideoPlaying2, setIsVideoPlaying2] = useState(false);
+  const [isVideoPlaying3, setIsVideoPlaying3] = useState(false);
+  const [cinemaModeVideo, setCinemaModeVideo] = useState<string | null>(null);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoRef2 = useRef<HTMLVideoElement>(null);
+  const videoRef3 = useRef<HTMLVideoElement>(null);
 
   // ATM Generator State
   const [tiktokUrl, setTiktokUrl] = useState("");
@@ -244,6 +247,13 @@ export default function App() {
     if (videoRef2.current) {
       videoRef2.current.play();
       setIsVideoPlaying2(true);
+    }
+  };
+
+  const handlePlayVideo3 = () => {
+    if (videoRef3.current) {
+      videoRef3.current.play();
+      setIsVideoPlaying3(true);
     }
   };
 
@@ -807,32 +817,30 @@ export default function App() {
                   className="text-center md:text-left group/quote"
                 >
                   <motion.h3
-                    whileHover={{
-                      textShadow:
-                        "0 0 20px rgba(249, 115, 22, 0.8), 0 0 40px rgba(249, 115, 22, 0.4)",
-                      color: "#fff",
+                    animate={{
+                      textShadow: [
+                        "0 0 0px rgba(249, 115, 22, 0)",
+                        "0 0 0px rgba(249, 115, 22, 0)",
+                        "0 0 40px rgba(249, 115, 22, 0.8), 0 0 80px rgba(249, 115, 22, 0.4)",
+                        "0 0 40px rgba(249, 115, 22, 0.8), 0 0 80px rgba(249, 115, 22, 0.4)",
+                        "0 0 0px rgba(249, 115, 22, 0)",
+                        "0 0 0px rgba(249, 115, 22, 0)",
+                      ],
+                      color: ["#27272a", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#27272a"],
                     }}
-                    className="text-4xl md:text-6xl font-display font-bold text-zinc-800 transition-all duration-300 cursor-default leading-tight"
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      times: [0, 0.2, 0.4, 0.6, 0.8, 1],
+                    }}
+                    className="text-4xl md:text-6xl font-display font-bold text-zinc-800 cursor-default leading-tight"
                   >
                     ADAPT. LEARN. <br />
                     CREATE. IMPACT.
                   </motion.h3>
                 </motion.div>
               </section>
-              <motion.div 
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                className="mt-24 pt-12 border-t border-white/5 flex flex-col items-center gap-6"
-              >
-                <p className="text-zinc-500 text-sm font-mono uppercase tracking-[0.3em]">End of Portfolio</p>
-                <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="flex items-center gap-2 px-8 py-3 rounded-full bg-zinc-900 border border-white/10 text-white hover:bg-orange-500 hover:border-orange-500 transition-all group shadow-xl"
-                >
-                  <ChevronLeft className="w-4 h-4 rotate-90 group-hover:-translate-y-1 transition-transform" />
-                  Back to Top
-                </button>
-              </motion.div>
             </motion.main>
           ) : view === "career" ? (
             <motion.main
@@ -1026,6 +1034,21 @@ export default function App() {
                   </button>
                 ))}
               </div>
+
+              <motion.div 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                className="mt-24 pt-12 border-t border-white/5 flex flex-col items-center gap-6"
+              >
+                <p className="text-zinc-500 text-sm font-mono uppercase tracking-[0.3em]">End of Portfolio</p>
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="flex items-center gap-2 px-8 py-3 rounded-full bg-zinc-900 border border-white/10 text-white hover:bg-orange-500 hover:border-orange-500 transition-all group shadow-xl"
+                >
+                  <ChevronLeft className="w-4 h-4 rotate-90 group-hover:-translate-y-1 transition-transform" />
+                  Back to Top
+                </button>
+              </motion.div>
             </motion.main>
           ) : (
             view === "portfolio-detail" && (
@@ -2488,6 +2511,495 @@ export default function App() {
                         </div>
                       </section>
                     </div>
+                  ) : selectedCategory === "video" ? (
+                    <div className="space-y-24 pt-12 border-t border-white/5">
+                      {/* Video Player Display */}
+                      <section className="space-y-12">
+                        <div className="p-8 md:p-12 rounded-[2.5rem] bg-zinc-900/30 border border-white/5 relative overflow-hidden group">
+                          <div className="absolute top-0 left-0 w-64 h-64 bg-orange-500/5 blur-3xl rounded-full" />
+                          
+                          <div className="relative z-10 flex flex-col gap-24">
+                            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-12 items-center">
+                              {/* Video on Left */}
+                              <div className="relative group/video overflow-hidden rounded-[2.5rem] bg-black border border-white/10 aspect-[9/16] w-full max-w-[280px] mx-auto md:mx-0">
+                                  <video
+                                    className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
+                                    playsInline
+                                    preload="metadata"
+                                  >
+                                    <source src="/Semarak-Trailer-1.mp4#t=0.1" type="video/mp4" />
+                                  </video>
+                                  <div
+                                    className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors cursor-pointer"
+                                    onClick={() => setCinemaModeVideo("/Semarak-Trailer-1.mp4")}
+                                  >
+                                    <motion.div
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      className="w-16 h-16 rounded-full bg-orange-500 text-black flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.6)]"
+                                    >
+                                      <Play className="w-6 h-6 fill-current translate-x-1" />
+                                    </motion.div>
+                                  </div>
+                              </div>
+                              
+                              {/* Text on Right */}
+                              <div className="space-y-6">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-mono tracking-widest uppercase">
+                                  Showcase Video 1
+                                </div>
+                                <h3 className="text-3xl md:text-5xl font-display font-medium text-white leading-tight">
+                                  The Deadline <br /> Semarak Media Trailer
+                                </h3>
+                                <p className="text-zinc-400 leading-relaxed max-w-2xl font-light text-lg">
+                                  An intense, fast-paced mock movie trailer dissecting the pressure of content creation deadlines, utilizing sharp cuts, dramatic narration, and high-tension progression.
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Technical Deep Dive */}
+                            <div className="space-y-12">
+                               <div className="flex flex-col gap-4">
+                                 <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 text-[10px] font-mono tracking-widest uppercase">
+                                   Deep Dive
+                                 </div>
+                                 <h3 className="text-3xl font-display font-medium text-white">
+                                   Editing Technique Breakdown
+                                 </h3>
+                               </div>
+
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                               {/* Breakdown list */}
+                               <div className="space-y-6">
+                                 <h4 className="text-lg font-bold text-white tracking-widest uppercase font-display border-b border-white/10 pb-4">
+                                   Visual & Transitions
+                                 </h4>
+                                 <ul className="space-y-4">
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-orange-500/10 h-fit">
+                                       <Video className="w-4 h-4 text-orange-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Fast-Paced Action</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Rapid cuts mapped exactly to the narration beats. Fokus transisi dibuat menghentak (hard cuts & J-cuts) untuk menciptakan ilusi waktu yang semakin menipis (deadline effect).</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-emerald-500/10 h-fit">
+                                       <Camera className="w-4 h-4 text-emerald-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Angle & Storyboard</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Pengambilan angle close-up wajah dan ekspresi kepanikan untuk menonjolkan stres karakter. Storyboard tersusun secara terstruktur memuncak pada klimaks saat teguran "Guys, ini kontennya belum ada yang selesai, gimana sih!"</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-blue-500/10 h-fit">
+                                       <Palette className="w-4 h-4 text-blue-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Color Grading & Lighting</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Dominasi warna-warna dingin dan kontras tinggi. Pencahayaan diatur minim (low-key lighting) ala sinematik thriller untuk menekankan urgensi bahwa mereka "belum tidur 3 hari".</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-purple-500/10 h-fit">
+                                       <Sparkles className="w-4 h-4 text-purple-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Effects & SFX</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Pemakaian sound effect detak jam, typing glitch, dan swoosh transition untuk membumbui adrenalin. Visual effects dipake seperlunya untuk tidak merusak feel sinematik.</p>
+                                     </div>
+                                   </li>
+                                 </ul>
+                                 
+                                 {/* Move Tools here inside left column of Deep dive or maybe spread across */}
+                               </div>
+
+                               {/* Concept & Narrative Strategy */}
+                               <div className="space-y-8">
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <MessageSquare className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Concept & Narrative</h4>
+                                   </div>
+                                    <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20">
+                                      <p className="text-[11px] text-orange-200 leading-relaxed italic">
+                                        "Mereka punya tiga jam untuk menyelamatkan dunia. Dunia konten. Satu penulis naskah, satu desainer, dan satu editor yang belum tidur, tiga hari. Mereka tak bisa mundur karena kalau telat... (Suara wanita: Guys, ini kontennya belum ada yang selesai, gimana sih!) Algoritma tidak akan memaafkan. Semarak Media Presents, THE DEADLINE."
+                                      </p>
+                                    </div>
+                                 </div>
+                                 
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <Brain className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Narration Strategy</h4>
+                                   </div>
+                                    <p className="text-xs text-zinc-500 leading-relaxed">
+                                      Pendekatan ala narator film action (Voice of God) yang bombastis, mendadak dirusak oleh komedi intrusi dari atas (suara klien/manajer: "Guys, ini kontennya belum ada yang selesai..."). Strategi kontras ini membangun tensi serius kemudian memecahnya menjadi sebuah komedi relatable bagi praktisi agensi.
+                                    </p>
+                                 </div>
+                                 
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <Layers className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Tools</h4>
+                                   </div>
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                                     <div className="p-4 rounded-xl bg-zinc-900 border border-white/5 flex gap-3 hover:border-[#312563]/50 transition-colors w-full overflow-hidden">
+                                        <div className="w-10 h-10 bg-[#312563] text-white flex items-center justify-center font-bold text-lg rounded-lg shrink-0">Pr</div>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 self-center truncate">Premiere Pro</span>
+                                     </div>
+                                     <div className="p-4 rounded-xl bg-zinc-900 border border-white/5 flex gap-3 hover:border-white/50 transition-colors w-full overflow-hidden">
+                                        <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-bold text-lg rounded-lg shrink-0">C</div>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 self-center truncate">Capcut Desktop</span>
+                                     </div>
+                                   </div>
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                     </section>
+
+                      {/* Video Player Display 2 */}
+                      <section className="space-y-12 pb-12">
+                        <div className="p-8 md:p-12 rounded-[2.5rem] bg-zinc-900/30 border border-white/5 relative overflow-hidden group">
+                          <div className="absolute top-1/2 right-0 w-64 h-64 bg-orange-500/5 blur-3xl rounded-full" />
+                          
+                          <div className="relative z-10 flex flex-col gap-24">
+                            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-12 items-center">
+                              {/* Text on Left */}
+                              <div className="space-y-6 order-2 md:order-1">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-mono tracking-widest uppercase">
+                                  Showcase Video 2
+                                </div>
+                                <h3 className="text-3xl md:text-5xl font-display font-medium text-white leading-tight">
+                                  The Revision <br /> Semarak Media Trailer
+                                </h3>
+                                <p className="text-zinc-400 leading-relaxed max-w-2xl font-light text-lg">
+                                  A dramatic sequence portraying the endless cycle of design revisions, featuring tension-inducing sound design, fast cuts, and a suspenseful trailer vibe for a relatable, comedic effect.
+                                </p>
+                              </div>
+                              
+                              {/* Video on Right */}
+                              <div className="relative group/video overflow-hidden rounded-[2.5rem] bg-black border border-white/10 aspect-[9/16] w-full max-w-[280px] mx-auto md:mx-0 order-1 md:order-2">
+                                  <video
+                                    className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
+                                    playsInline
+                                    preload="metadata"
+                                  >
+                                    <source src="/Semarak-Trailer-2.mp4#t=0.1" type="video/mp4" />
+                                  </video>
+                                  <div
+                                    className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors cursor-pointer"
+                                    onClick={() => setCinemaModeVideo("/Semarak-Trailer-2.mp4")}
+                                  >
+                                    <motion.div
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      className="w-16 h-16 rounded-full bg-orange-500 text-black flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.6)]"
+                                    >
+                                      <Play className="w-6 h-6 fill-current translate-x-1" />
+                                    </motion.div>
+                                  </div>
+                              </div>
+                            </div>
+                            
+                            {/* Technical Deep Dive */}
+                            <div className="space-y-12">
+                               <div className="flex flex-col gap-4">
+                                 <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 text-[10px] font-mono tracking-widest uppercase">
+                                   Deep Dive
+                                 </div>
+                                 <h3 className="text-3xl font-display font-medium text-white">
+                                   Editing Technique Breakdown
+                                 </h3>
+                               </div>
+
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                               {/* Breakdown list */}
+                               <div className="space-y-6">
+                                 <h4 className="text-lg font-bold text-white tracking-widest uppercase font-display border-b border-white/10 pb-4">
+                                   Visual & Transitions
+                                 </h4>
+                                 <ul className="space-y-4">
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-orange-500/10 h-fit">
+                                       <Video className="w-4 h-4 text-orange-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Fast-Paced Action</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Transisi cepat yang mengikuti beat narasi suspense, memberikan efek ketegangan layaknya menonton film thriller, merepresentasikan rasa frustrasi menghadapi revisi tiada akhir.</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-emerald-500/10 h-fit">
+                                       <Camera className="w-4 h-4 text-emerald-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Angle & Storyboard</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Pengambilan gambar yang dramatis, dengan fokus pada ekspresi kelelahan tim. Alur memuncak pada punchline bahwa revisi hanyalah reinkarnasi dengan nama baru.</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-blue-500/10 h-fit">
+                                       <Palette className="w-4 h-4 text-blue-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Color Grading & Lighting</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Tone warna gelap dan sinematik yang memberikan kesan suram dan misterius, seperti sedang mengungkap konspirasi file berakhiran '_final_v2'.</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-purple-500/10 h-fit">
+                                       <Sparkles className="w-4 h-4 text-purple-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Effects & SFX</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Penggunaan sound effect khas trailer blockbuster (bass drops, risers, dan swooshes), dipadukan dengan tipografi judul besar yang terkesan epik.</p>
+                                     </div>
+                                   </li>
+                                 </ul>
+                               </div>
+
+                               {/* Concept & Narrative Strategy */}
+                               <div className="space-y-8">
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <MessageSquare className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Concept & Narrative</h4>
+                                   </div>
+                                    <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20">
+                                      <p className="text-[11px] text-orange-200 leading-relaxed italic">
+                                        "Di dunia di mana setiap revisi melahirkan revisi baru. Satu tim berjuang melawan file final yang tak pernah final. Mereka pikir ini proyek biasa, tapi mereka salah. This summer, prepare yourself for... THE REVISION. Karena di dunia desain, revisi nggak pernah mati. Dia cuma reinkarnasi dengan nama baru."
+                                      </p>
+                                    </div>
+                                 </div>
+                                 
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <Brain className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Narration Strategy</h4>
+                                   </div>
+                                    <p className="text-xs text-zinc-500 leading-relaxed">
+                                      Menggunakan gaya Voice of God dari trailer film musim panas Hollywood yang bombastis, diaplikasikan pada penderitaan sehari-hari seorang editor atau desainer: revisi. Hiperbola sinematik ini menjadi senjata komedi utamanya.
+                                    </p>
+                                 </div>
+                                 
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <Layers className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Tools</h4>
+                                   </div>
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                                     <div className="p-4 rounded-xl bg-zinc-900 border border-white/5 flex gap-3 hover:border-[#312563]/50 transition-colors w-full overflow-hidden">
+                                        <div className="w-10 h-10 bg-[#312563] text-white flex items-center justify-center font-bold text-lg rounded-lg shrink-0">Pr</div>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 self-center truncate">Premiere Pro</span>
+                                     </div>
+                                     <div className="p-4 rounded-xl bg-zinc-900 border border-white/5 flex gap-3 hover:border-white/50 transition-colors w-full overflow-hidden">
+                                        <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-bold text-lg rounded-lg shrink-0">C</div>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 self-center truncate">Capcut Desktop</span>
+                                     </div>
+                                   </div>
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* Video Player Display 3 */}
+                      <section className="space-y-12 pb-12">
+                        <div className="p-8 md:p-12 rounded-[2.5rem] bg-zinc-900/30 border border-white/5 relative overflow-hidden group">
+                          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-3xl rounded-full" />
+                          
+                          <div className="relative z-10 flex flex-col gap-24">
+                            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-12 items-center">
+                              {/* Video on Left */}
+                              <div className="relative group/video overflow-hidden rounded-[2.5rem] bg-black border border-white/10 aspect-[9/16] w-full max-w-[280px] mx-auto md:mx-0">
+                                  <video
+                                    className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
+                                    playsInline
+                                    preload="metadata"
+                                  >
+                                    <source src="/Semarak-Bedahh.mp4#t=0.1" type="video/mp4" />
+                                  </video>
+                                  <div
+                                    className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors cursor-pointer"
+                                    onClick={() => setCinemaModeVideo("/Semarak-Bedahh.mp4")}
+                                  >
+                                    <motion.div
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      className="w-16 h-16 rounded-full bg-orange-500 text-black flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.6)]"
+                                    >
+                                      <Play className="w-6 h-6 fill-current translate-x-1" />
+                                    </motion.div>
+                                  </div>
+                              </div>
+                              
+                              {/* Text on Right */}
+                              <div className="space-y-6">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-mono tracking-widest uppercase">
+                                  Showcase Video 3
+                                </div>
+                                <h3 className="text-3xl md:text-5xl font-display font-medium text-white leading-tight">
+                                  Scent Marketing <br /> Brand Breakdown
+                                </h3>
+                                <p className="text-zinc-400 leading-relaxed max-w-2xl font-light text-lg">
+                                  An insightful breakdown of multi-sensory marketing, explaining how brands like bakeries and 5-star hotels use signature scents to subconsciously influence consumer behavior, mood, and purchasing decisions.
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Technical Deep Dive */}
+                            <div className="space-y-12">
+                               <div className="flex flex-col gap-4">
+                                 <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 text-[10px] font-mono tracking-widest uppercase">
+                                   Deep Dive
+                                 </div>
+                                 <h3 className="text-3xl font-display font-medium text-white">
+                                   Editing Technique Breakdown
+                                 </h3>
+                               </div>
+
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                               {/* Breakdown list */}
+                               <div className="space-y-6">
+                                 <h4 className="text-lg font-bold text-white tracking-widest uppercase font-display border-b border-white/10 pb-4">
+                                   Visual & Transitions
+                                 </h4>
+                                 <ul className="space-y-4">
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-orange-500/10 h-fit">
+                                       <Video className="w-4 h-4 text-orange-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Dynamic Pacing</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Ritme visual yang menyesuaikan dengan gaya bicara "storytelling", dilengkapi dengan pop-up teks penekanan (keywords) untuk mempertahankan retensi audiens.</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-emerald-500/10 h-fit">
+                                       <Camera className="w-4 h-4 text-emerald-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">B-Roll Integration</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Penggunaan stok footage b-roll yang relevan (misalnya roti segar, lobi hotel mewah) untuk mengilustrasikan poin-poin yang sedang dibicarakan secara visual.</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-blue-500/10 h-fit">
+                                       <Palette className="w-4 h-4 text-blue-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Color & Tone</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Pengaturan tone warna yang mengundang (warm) saat membahas roti, dan tone yang lebih elegan (premium) saat membahas hotel bintang 5.</p>
+                                     </div>
+                                   </li>
+                                   <li className="flex gap-4">
+                                     <div className="p-2 rounded-lg bg-purple-500/10 h-fit">
+                                       <Sparkles className="w-4 h-4 text-purple-500" />
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Audio & SFX</p>
+                                        <p className="text-xs text-zinc-500 leading-relaxed font-light">Pemakaian sound design yang presisi—seperti suasana kafe atau white noise hotel yang halus—dipadukan dengan voiceover yang sangat clear dan jernih.</p>
+                                     </div>
+                                   </li>
+                                 </ul>
+                               </div>
+
+                               {/* Concept & Narrative Strategy */}
+                               <div className="space-y-8">
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <MessageSquare className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Concept & Narrative</h4>
+                                   </div>
+                                    <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20">
+                                      <p className="text-[11px] text-orange-200 leading-relaxed italic">
+                                        "Pernah nggak sih kamu lewat depan toko roti, belum lapar, eh ujung-ujungnya beli juga? Itu bukan suatu kebetulan, itu aroma yang sengaja dibuat. Roti O, itu contoh yang paling gampang. Aromanya sengaja disebar keluar toko biar kamu kebawa masuk. Kalau Hotel Bintang 5, sama juga. Setiap hotel itu ngasih signature scent..."
+                                      </p>
+                                    </div>
+                                 </div>
+                                 
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <Brain className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Narration Strategy</h4>
+                                   </div>
+                                    <p className="text-xs text-zinc-500 leading-relaxed">
+                                      Pendekatan storytelling yang edukasional namun sangat conversational. Menyampaikan "marketing insight" berat (multi-sensory marketing) lewat observasi pengalaman sehari-hari yang sangat relatable, mempertahankan rasa "aha!" bagi penonton.
+                                    </p>
+                                 </div>
+                                 
+                                 <div className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                   <div className="flex items-center gap-3 mb-2">
+                                     <Layers className="w-5 h-5 text-zinc-300" />
+                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest">Tools</h4>
+                                   </div>
+                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                                     <div className="p-4 rounded-xl bg-zinc-900 border border-white/5 flex gap-3 hover:border-[#312563]/50 transition-colors w-full overflow-hidden">
+                                        <div className="w-10 h-10 bg-[#312563] text-white flex items-center justify-center font-bold text-lg rounded-lg shrink-0">Pr</div>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 self-center truncate">Premiere Pro</span>
+                                     </div>
+                                     <div className="p-4 rounded-xl bg-zinc-900 border border-white/5 flex gap-3 hover:border-white/50 transition-colors w-full overflow-hidden">
+                                        <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-bold text-lg rounded-lg shrink-0">C</div>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 self-center truncate">Capcut Desktop</span>
+                                     </div>
+                                   </div>
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* Fast Track / Quick View */}
+                      <section className="space-y-12 pb-12 pt-12 border-t border-white/5">
+                          <div className="flex flex-col items-center text-center gap-4 max-w-2xl mx-auto">
+                              <h3 className="text-3xl font-display font-medium text-white">Fast Track Gallery</h3>
+                              <p className="text-zinc-400 font-light text-lg">
+                                  For a swift overview, here is a curated selection of my other video editing works. Let's get straight to the point.
+                              </p>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                              {[
+                                  "/Cozyon-Cinematicc.mp4",
+                                  "/Semarak-Duell.mp4",
+                                  "/Tailg-Evv.mp4",
+                                  "/Semarak-Trailer-3.mp4"
+                              ].map((src, i) => (
+                                  <div key={i} className="relative group/video overflow-hidden rounded-[2.5rem] bg-black border border-white/10 aspect-[9/16] w-full">
+                                      <video
+                                        className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
+                                        playsInline
+                                        preload="metadata"
+                                      >
+                                          <source src={`${src}#t=0.1`} type="video/mp4" />
+                                      </video>
+                                      <div
+                                        className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors cursor-pointer"
+                                        onClick={() => setCinemaModeVideo(src)}
+                                      >
+                                          <motion.div
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            className="w-16 h-16 rounded-full bg-orange-500 text-black flex items-center justify-center shadow-[0_0_40px_rgba(249,115,22,0.6)]"
+                                          >
+                                              <Play className="w-6 h-6 fill-current translate-x-1" />
+                                          </motion.div>
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      </section>
+                    </div>
                   ) : (
                     /* Individual Projects Grid for other categories */
                     <div className="grid grid-cols-1 gap-12 pt-12 min-h-[400px] flex items-center justify-center text-center">
@@ -2506,6 +3018,56 @@ export default function App() {
                     </div>
                   )}
                 </div>
+
+                <section className="mt-24 max-w-5xl mx-auto">
+                    <div className="p-8 md:p-12 rounded-[2.5rem] bg-zinc-900/40 border border-white/5 relative overflow-hidden">
+                        <div className="absolute -top-32 -right-32 w-96 h-96 bg-orange-500/10 blur-3xl rounded-full" />
+                        
+                        <div className="relative z-10 space-y-12">
+                            <div className="flex flex-col gap-4">
+                                <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-mono tracking-widest uppercase">
+                                    Freelance Experience
+                                </div>
+                                <h3 className="text-3xl font-display font-medium text-white">Pssttt... Client Ratings</h3>
+                                <p className="text-zinc-400 leading-relaxed font-light text-lg">
+                                   I have also worked as a freelance video editor on Fastwork under the alias <strong>daexhi</strong>. Here are a few testimonials from clients who have hired me, emphasizing speed, quality, and overall satisfaction. You can view my full profile here: <a href="https://fastwork.id/user/daexhi" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors">fastwork.id/user/daexhi</a>.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[
+                                    { text: "Kerjanya cepet banget, komunikatif, dan hasilnya juga bagus banget... Sangat memuaskan!!", user: "Client Fastwork" },
+                                    { text: "Kerja cepat, revisi juga cepat. Hasil akhir video sangat memuaskan dan profesional.", user: "Client Fastwork" },
+                                    { text: "Sangat komunikatif dan mengerti arahan dengan baik. Video selesai lebih cepat dari deadline dengan kualitas yang bagus.", user: "Client Fastwork" },
+                                    { text: "Editor fast respon, kerja bagus & cepat. Next bakal order lagi.", user: "Client Fastwork" },
+                                ].map((review, i) => (
+                                    <div key={i} className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                        <div className="flex text-orange-500 gap-1 pb-1">
+                                            {[1,2,3,4,5].map(star => <Star key={star} className="w-4 h-4 fill-current" />)}
+                                        </div>
+                                        <p className="text-zinc-300 font-medium italic text-sm leading-relaxed">"{review.text}"</p>
+                                        <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest">— {review.user}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  className="mt-24 pt-12 border-t border-white/5 flex flex-col items-center gap-6"
+                >
+                  <p className="text-zinc-500 text-sm font-mono uppercase tracking-[0.3em]">End of Portfolio</p>
+                  <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="flex items-center gap-2 px-8 py-3 rounded-full bg-zinc-900 border border-white/10 text-white hover:bg-orange-500 hover:border-orange-500 transition-all group shadow-xl"
+                  >
+                    <ChevronLeft className="w-4 h-4 rotate-90 group-hover:-translate-y-1 transition-transform" />
+                    Back to Top
+                  </button>
+                </motion.div>
               </motion.main>
             )
           )}
@@ -2747,6 +3309,48 @@ export default function App() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {cinemaModeVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4 md:p-12"
+            onClick={() => {
+              setCinemaModeVideo(null);
+            }}
+          >
+            <button
+              className="absolute top-8 right-8 text-white hover:text-orange-500 transition-colors z-[60]"
+              onClick={() => {
+                setCinemaModeVideo(null);
+              }}
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-[400px] aspect-[9/16] rounded-3xl overflow-hidden bg-black shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <video
+                ref={(el) => {
+                   if (el && cinemaModeVideo) {
+                      el.src = cinemaModeVideo;
+                      el.play().catch(e => console.log('Autoplay failed', e));
+                   }
+                }}
+                className="w-full h-full object-cover"
+                controls
+                playsInline
+              />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
