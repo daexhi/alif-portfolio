@@ -250,9 +250,13 @@ export default function App() {
       });
     } catch (error: any) {
       console.error("ATM Generation Error:", error);
-      alert(
-        `Error: ${error.message || "Failed to generate ATM script"}\n\nNote: For Vercel deployments, large videos might exceed size limits. Try a shorter TikTok video.`
-      );
+      let errorMessage = error.message || "Failed to generate ATM script";
+      
+      if (errorMessage.includes("500") || errorMessage.includes("Media download failed")) {
+        errorMessage += "\n\nTip: This often happens if the TikTok video is too large or private. Try a shorter, public video (under 1 min).";
+      }
+
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsGenerating(false);
     }

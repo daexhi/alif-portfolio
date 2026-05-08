@@ -112,12 +112,17 @@ async function startServer() {
     try {
       const response = await axios.get(mediaUrl, { 
         responseType: 'arraybuffer',
+        maxContentLength: 10 * 1024 * 1024, // 10MB limit
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Referer': 'https://www.tiktok.com/'
         }
       });
       const contentType = response.headers['content-type'];
+      const contentLength = response.headers['content-length'];
+      
+      console.log(`Media Downloaded: ${contentType}, Size: ${contentLength} bytes`);
+
       const base64 = Buffer.from(response.data).toString('base64');
       
       res.json({
@@ -126,7 +131,9 @@ async function startServer() {
       });
     } catch (error: any) {
       console.error('Proxy Media Error:', error.message);
-      res.status(500).json({ error: 'Failed to proxy media' });
+      const status = error.response?.status || 500;
+      const message = error.response?.data?.toString() || error.message;
+      res.status(status).json({ error: `Media download failed: ${message}` });
     }
   });
 
