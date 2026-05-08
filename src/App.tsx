@@ -141,18 +141,29 @@ export default function App() {
       const response = await fetch(
         `/api/tiktok-proxy?url=${encodeURIComponent(tiktokUrl)}`,
       );
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server returned ${response.status}`);
+      }
+      
       const data = await response.json();
 
-      if (data.error) throw new Error(data.error);
+      if (data.error) throw new Error(`TikTok Metadata Error: ${data.error}`);
 
       // 2. Fetch media content for analysis
       const mediaResponse = await fetch(
         `/api/proxy-media?url=${encodeURIComponent(data.videoUrl)}`,
       );
+      
+      if (!mediaResponse.ok) {
+        throw new Error(`Media Proxy Error: Failed to download video (Status ${mediaResponse.status})`);
+      }
+      
       const mediaData = await mediaResponse.json();
 
       if (!mediaData.data)
-        throw new Error("Could not download video for analysis");
+        throw new Error("Could not download video for analysis (Empty response)");
 
       // 3. Call Gemini generation directly from frontend with video content
       const prompt = `
@@ -196,26 +207,37 @@ export default function App() {
         }
       `;
 
-      const aiResponse = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: {
-          parts: [
-            { text: prompt },
-            {
-              inlineData: {
-                mimeType: mediaData.mimeType || "video/mp4",
-                data: mediaData.data,
+      let aiResponse;
+      try {
+        aiResponse = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: mediaData.mimeType || "video/mp4",
+                  data: mediaData.data,
+                },
               },
-            },
-          ],
-        },
-      });
+            ],
+          },
+        });
+      } catch (aiErr: any) {
+        throw new Error(`Gemini AI Error: ${aiErr.message || "Failed to generate content"}`);
+      }
 
       const outputText = aiResponse.text;
       if (!outputText) throw new Error("AI returned empty response");
 
-      const cleanJson = outputText.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(cleanJson);
+      let parsed;
+      try {
+        const cleanJson = outputText.replace(/```json|```/g, "").trim();
+        parsed = JSON.parse(cleanJson);
+      } catch (jsonErr) {
+        console.error("JSON Parse Error. Output was:", outputText);
+        throw new Error("AI response format was invalid. Please try again.");
+      }
 
       setAtmResult({
         original: parsed.original,
@@ -226,10 +248,10 @@ export default function App() {
         modifikasi: parsed.modifikasi,
         metadata: data,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("ATM Generation Error:", error);
       alert(
-        "Failed to generate ATM script. Please try a different public TikTok link.",
+        `Error: ${error.message || "Failed to generate ATM script"}\n\nNote: For Vercel deployments, large videos might exceed size limits. Try a shorter TikTok video.`
       );
     } finally {
       setIsGenerating(false);
