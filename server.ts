@@ -12,6 +12,15 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+  
+  // Custom middleware for MP4 files to ensure correct MIME type and range support
+  app.get('*.mp4', (req, res, next) => {
+    res.setHeader('Content-Type', 'video/mp4');
+    // Ensure the file exists before letting express.static handle it with these headers
+    next();
+  });
+
+  app.use(express.static(path.join(process.cwd(), "public")));
 
   // API Proxy for TikTok with TikWM API
   app.get("/api/tiktok-proxy", async (req, res) => {

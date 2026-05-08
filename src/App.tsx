@@ -375,6 +375,34 @@ export default function App() {
 
   const experience = [
     {
+      company: "PT. Semarak Media Bisnis",
+      role: "Content Creator",
+      period: "Aug 2025 - Present",
+      description:
+        "Full-lifecycle content production and e-commerce ecosystem management. I transitioned to this startup after being recruited by my former department head at PT. Cahaya Bisnis Digital to help launch and scale their new venture.",
+      details: [
+        "Produced and edited high-engagement short-form video content.",
+        "Designed comprehensive visual assets for corporate and e-commerce platforms.",
+        "Managed content strategy and marketplace presence for the Cozyon brand.",
+        "Developed custom content solutions tailored to client-specific requests.",
+        "Orchestrated content workflows from scriptwriting to final post-production.",
+      ],
+    },
+    {
+      company: "PT. Cahaya Bisnis Digital",
+      role: "Content Creator",
+      period: "Feb 2025 - Jul 2025",
+      description:
+        "Content production and creative strategy focused on supporting corporate sales and SaaS implementation documentation.",
+      details: [
+        "Shot and produced creative short-form video assets.",
+        "Developed graphic design materials for corporate requirements.",
+        "Conducted market and content research to drive engagement.",
+        "Documented SaaS installation processes for sales and onboarding support.",
+        "Collaborated on creative scriptwriting for digital campaigns.",
+      ],
+    },
+    {
       company: "PT. Joy Play Culture",
       role: "Graphic Designer MCN",
       period: "Oct 2024 - Jan 2025",
@@ -820,13 +848,13 @@ export default function App() {
                     animate={{
                       textShadow: [
                         "0 0 0px rgba(249, 115, 22, 0)",
-                        "0 0 0px rgba(249, 115, 22, 0)",
-                        "0 0 40px rgba(249, 115, 22, 0.8), 0 0 80px rgba(249, 115, 22, 0.4)",
-                        "0 0 40px rgba(249, 115, 22, 0.8), 0 0 80px rgba(249, 115, 22, 0.4)",
-                        "0 0 0px rgba(249, 115, 22, 0)",
+                        "0 0 10px rgba(249, 115, 22, 0.3)",
+                        "0 0 40px rgba(249, 115, 22, 0.9), 0 0 80px rgba(249, 115, 22, 0.5)",
+                        "0 0 40px rgba(249, 115, 22, 0.9), 0 0 80px rgba(249, 115, 22, 0.5)",
+                        "0 0 10px rgba(249, 115, 22, 0.3)",
                         "0 0 0px rgba(249, 115, 22, 0)",
                       ],
-                      color: ["#27272a", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#27272a"],
+                      color: ["#27272a", "#a1a1aa", "#ffffff", "#ffffff", "#a1a1aa", "#27272a"],
                     }}
                     transition={{
                       duration: 4,
@@ -1440,21 +1468,21 @@ export default function App() {
                               </div>
 
                               <div className="relative group overflow-hidden rounded-[2.5rem] bg-black border border-white/10 aspect-[9/16] max-w-[320px] mx-auto">
-                                <video
-                                  ref={videoRef}
-                                  className="w-full h-full object-cover"
-                                  controls={isVideoPlaying}
-                                  playsInline
-                                  preload="metadata"
-                                  onPlay={() => setIsVideoPlaying(true)}
-                                  onPause={() => setIsVideoPlaying(false)}
-                                  onEnded={() => setIsVideoPlaying(false)}
-                                >
-                                  <source
+                                  <video
+                                    ref={videoRef}
+                                    className="w-full h-full object-cover"
+                                    controls={isVideoPlaying}
+                                    playsInline
+                                    muted
+                                    loop
+                                    autoPlay
+                                    preload="auto"
                                     src="/cozyon.mp4#t=0.1"
-                                    type="video/mp4"
+                                    onPlay={() => setIsVideoPlaying(true)}
+                                    onPause={() => setIsVideoPlaying(false)}
+                                    onEnded={() => setIsVideoPlaying(false)}
+                                    onError={(e) => console.error("Video Error (cozyon.mp4):", e)}
                                   />
-                                </video>
                                 {!isVideoPlaying && (
                                   <div
                                     className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors cursor-pointer"
@@ -1639,16 +1667,15 @@ export default function App() {
                                   className="w-full h-full object-cover"
                                   controls={isVideoPlaying2}
                                   playsInline
-                                  preload="metadata"
+                                  muted
+                                  loop
+                                  autoPlay
+                                  preload="auto"
+                                  src="/5-transisi-semarak.mp4#t=0.1"
                                   onPlay={() => setIsVideoPlaying2(true)}
                                   onPause={() => setIsVideoPlaying2(false)}
                                   onEnded={() => setIsVideoPlaying2(false)}
-                                >
-                                  <source
-                                    src="/5-transisi-semarak.mp4#t=0.1"
-                                    type="video/mp4"
-                                  />
-                                </video>
+                                />
                                 {!isVideoPlaying2 && (
                                   <div
                                     className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors cursor-pointer"
@@ -2525,10 +2552,12 @@ export default function App() {
                                   <video
                                     className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
                                     playsInline
-                                    preload="metadata"
-                                  >
-                                    <source src="/Semarak-Trailer-1.mp4#t=0.1" type="video/mp4" />
-                                  </video>
+                                    muted
+                                    loop
+                                    autoPlay
+                                    preload="auto"
+                                    src="/Semarak-Trailer-1.mp4#t=0.1"
+                                  />
                                   <div
                                     className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors cursor-pointer"
                                     onClick={() => setCinemaModeVideo("/Semarak-Trailer-1.mp4")}
@@ -2688,10 +2717,12 @@ export default function App() {
                                   <video
                                     className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
                                     playsInline
-                                    preload="metadata"
-                                  >
-                                    <source src="/Semarak-Trailer-2.mp4#t=0.1" type="video/mp4" />
-                                  </video>
+                                    muted
+                                    loop
+                                    autoPlay
+                                    preload="auto"
+                                    src="/Semarak-Trailer-2.mp4#t=0.1"
+                                  />
                                   <div
                                     className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors cursor-pointer"
                                     onClick={() => setCinemaModeVideo("/Semarak-Trailer-2.mp4")}
@@ -2823,10 +2854,12 @@ export default function App() {
                                   <video
                                     className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
                                     playsInline
-                                    preload="metadata"
-                                  >
-                                    <source src="/Semarak-Bedahh.mp4#t=0.1" type="video/mp4" />
-                                  </video>
+                                    muted
+                                    loop
+                                    autoPlay
+                                    preload="auto"
+                                    src="/Semarak-Bedahh.mp4#t=0.1"
+                                  />
                                   <div
                                     className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors cursor-pointer"
                                     onClick={() => setCinemaModeVideo("/Semarak-Bedahh.mp4")}
@@ -2979,10 +3012,12 @@ export default function App() {
                                       <video
                                         className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
                                         playsInline
-                                        preload="metadata"
-                                      >
-                                          <source src={`${src}#t=0.1`} type="video/mp4" />
-                                      </video>
+                                        muted
+                                        loop
+                                        autoPlay
+                                        preload="auto"
+                                        src={`${src}#t=0.1`}
+                                      />
                                       <div
                                         className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors cursor-pointer"
                                         onClick={() => setCinemaModeVideo(src)}
@@ -3019,40 +3054,45 @@ export default function App() {
                   )}
                 </div>
 
-                <section className="mt-24 max-w-5xl mx-auto">
-                    <div className="p-8 md:p-12 rounded-[2.5rem] bg-zinc-900/40 border border-white/5 relative overflow-hidden">
-                        <div className="absolute -top-32 -right-32 w-96 h-96 bg-orange-500/10 blur-3xl rounded-full" />
-                        
-                        <div className="relative z-10 space-y-12">
-                            <div className="flex flex-col gap-4">
-                                <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-mono tracking-widest uppercase">
-                                    Freelance Experience
-                                </div>
-                                <h3 className="text-3xl font-display font-medium text-white">Pssttt... Client Ratings</h3>
-                                <p className="text-zinc-400 leading-relaxed font-light text-lg">
-                                   I have also worked as a freelance video editor on Fastwork under the alias <strong>daexhi</strong>. Here are a few testimonials from clients who have hired me, emphasizing speed, quality, and overall satisfaction. You can view my full profile here: <a href="https://fastwork.id/user/daexhi" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors">fastwork.id/user/daexhi</a>.
-                                </p>
-                            </div>
+                {selectedCategory === "video" && (
+                  <section className="mt-24 max-w-5xl mx-auto">
+                      <div className="p-8 md:p-12 rounded-[2.5rem] bg-zinc-900/40 border border-white/5 relative overflow-hidden">
+                          <div className="absolute -top-32 -right-32 w-96 h-96 bg-orange-500/10 blur-3xl rounded-full" />
+                          
+                          <div className="relative z-10 space-y-12">
+                              <div className="flex flex-col gap-4">
+                                  <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-mono tracking-widest uppercase">
+                                      Freelance Experience
+                                  </div>
+                                  <h3 className="text-3xl font-display font-medium text-white">Pssttt... Client Ratings</h3>
+                                  <p className="text-zinc-400 leading-relaxed font-light text-lg">
+                                     I have also worked as a freelance video editor on Fastwork under the alias <strong>daexhi</strong>. Here are a few testimonials from clients who have hired me, emphasizing speed, quality, and overall satisfaction. You can view my full profile here: <a href="https://fastwork.id/user/daexhi" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors">fastwork.id/user/daexhi</a>.
+                                  </p>
+                              </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {[
-                                    { text: "Kerjanya cepet banget, komunikatif, dan hasilnya juga bagus banget... Sangat memuaskan!!", user: "Client Fastwork" },
-                                    { text: "Kerja cepat, revisi juga cepat. Hasil akhir video sangat memuaskan dan profesional.", user: "Client Fastwork" },
-                                    { text: "Sangat komunikatif dan mengerti arahan dengan baik. Video selesai lebih cepat dari deadline dengan kualitas yang bagus.", user: "Client Fastwork" },
-                                    { text: "Editor fast respon, kerja bagus & cepat. Next bakal order lagi.", user: "Client Fastwork" },
-                                ].map((review, i) => (
-                                    <div key={i} className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
-                                        <div className="flex text-orange-500 gap-1 pb-1">
-                                            {[1,2,3,4,5].map(star => <Star key={star} className="w-4 h-4 fill-current" />)}
-                                        </div>
-                                        <p className="text-zinc-300 font-medium italic text-sm leading-relaxed">"{review.text}"</p>
-                                        <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest">— {review.user}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {[
+                                      { text: "sangat terpercaya, orgnya sangat sabar meskipun ada kendala tetap membantu sampai berhasil 👍👍👍", user: "putra440 on 16/03/2021", stars: 5 },
+                                      { text: "Selalu puas dengan pelayanan dan komunikasi dengan Alif! Terima kasih yaaaa, super happyyy ✨🙏🏼", user: "wxtdotav on 07/04/2021", stars: 5 },
+                                      { text: "Freelancer ramah, komunikatif, kerja cepat. recommended 👍", user: "narita07 on 30/03/2021", stars: 5 },
+                                      { text: "mantapp.. cocok buat yg butuh kerjaan cepatt..", user: "war1945 on 21/07/2021", stars: 4.8 },
+                                  ].map((review, i) => (
+                                      <div key={i} className="p-6 rounded-2xl bg-black border border-white/5 space-y-4">
+                                          <div className="flex text-orange-500 gap-1 pb-1">
+                                              {[1,2,3,4,5].map(star => (
+                                                  <Star key={star} className={`w-4 h-4 ${star <= review.stars ? 'fill-current' : star - 0.5 <= review.stars ? 'fill-current' : ''}`} />
+                                              ))}
+                                              <span className="text-zinc-500 text-[10px] ml-2 self-center">{review.stars} / 5</span>
+                                          </div>
+                                          <p className="text-zinc-300 font-medium italic text-sm leading-relaxed">"{review.text}"</p>
+                                          <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest">— {review.user}</p>
+                                      </div>
+                                  ))}
+                              </div>
+                          </div>
+                      </div>
+                  </section>
+                )}
 
                 <motion.div 
                   initial={{ opacity: 0 }}
@@ -3339,15 +3379,12 @@ export default function App() {
               onClick={(e) => e.stopPropagation()}
             >
               <video
-                ref={(el) => {
-                   if (el && cinemaModeVideo) {
-                      el.src = cinemaModeVideo;
-                      el.play().catch(e => console.log('Autoplay failed', e));
-                   }
-                }}
-                className="w-full h-full object-cover"
+                src={cinemaModeVideo}
+                autoPlay
                 controls
                 playsInline
+                className="w-full h-full object-cover"
+                onError={(e) => console.error("Video play error:", e)}
               />
             </motion.div>
           </motion.div>
