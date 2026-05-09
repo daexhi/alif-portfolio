@@ -1,6 +1,8 @@
 {
-  "name": "",
-  "description": "",
-  "requestFramePermissions": [],
-  "majorCapabilities": []
+  "name": "Alif Akbar Portfolio",
+  "description": "Professional portfolio featuring video editing, graphic design, and an AI-driven content ATM generator strategy.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
 }

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Mail,
@@ -52,6 +52,128 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { GoogleGenAI } from "@google/genai";
+
+const BackgroundAnimation = memo(() => {
+  const shapes = useMemo(() => [...Array(6)].map((_, i) => ({
+    width: i % 2 === 0 ? '350px' : '200px',
+    height: i % 2 === 0 ? '350px' : '200px',
+    borderRadius: i % 3 === 0 ? '40%' : '50%',
+    border: i % 2 === 0 ? '1px solid rgba(249, 115, 22, 0.2)' : 'none',
+    background: i % 2 === 1 ? 'radial-gradient(circle, rgba(249, 115, 22, 0.25) 0%, transparent 80%)' : 'transparent',
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    duration: 15 + Math.random() * 10,
+    delay: i * 2,
+    moveX: [0, Math.random() * 400 - 200, 0],
+    moveY: [0, Math.random() * 400 - 200, 0],
+  })), []);
+
+  const orbs = useMemo(() => [...Array(15)].map((_, i) => ({
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    duration: 2 + Math.random() * 3,
+    delay: Math.random() * 10,
+  })), []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden bg-[#050505]">
+      {/* Dynamic Grid Overlay */}
+      <div 
+        className="absolute inset-0 opacity-[0.03]" 
+        style={{
+          backgroundImage: `linear-gradient(rgba(249, 115, 22, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(249, 115, 22, 0.5) 1px, transparent 1px)`,
+          backgroundSize: '100px 100px'
+        }}
+      />
+
+      {/* Main Moving Shapes */}
+      <div className="absolute inset-0">
+        {shapes.map((shape, i) => (
+          <motion.div
+            key={`shape-${i}`}
+            className="absolute"
+            style={{
+              width: shape.width,
+              height: shape.height,
+              borderRadius: shape.borderRadius,
+              border: shape.border,
+              background: shape.background,
+              filter: 'blur(40px)',
+              left: shape.left,
+              top: shape.top,
+            }}
+            animate={{
+              x: shape.moveX,
+              y: shape.moveY,
+              rotate: [0, 180, 360],
+              scale: [1, 1.2, 0.8, 1],
+            }}
+            transition={{
+              duration: shape.duration,
+              repeat: Infinity,
+              ease: "linear",
+              delay: shape.delay,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Glowing Accents */}
+      <div className="absolute inset-0">
+        {[...Array(3)].map((_, i) => (
+          <motion.div
+            key={`glow-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: '600px',
+              height: '600px',
+              background: 'radial-gradient(circle, rgba(249, 115, 22, 0.05) 0%, transparent 70%)',
+              left: i === 0 ? '-10%' : i === 1 ? '60%' : '20%',
+              top: i === 0 ? '20%' : i === 1 ? '-10%' : '70%',
+            }}
+            animate={{
+              opacity: [0.3, 0.6, 0.3],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 8 + i * 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Sharp Floating Orbs */}
+      <div className="absolute inset-0">
+        {orbs.map((orb, i) => (
+          <motion.div
+            key={`orb-${i}`}
+            className="absolute w-0.5 h-0.5 bg-orange-500 rounded-full"
+            style={{
+              left: orb.left,
+              top: orb.top,
+              boxShadow: '0 0 10px rgba(249, 115, 22, 0.8)',
+            }}
+            animate={{
+              opacity: [0, 1, 0],
+              scale: [0, 1.5, 0],
+            }}
+            transition={{
+              duration: orb.duration,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: orb.delay,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Subtle Noise/Grain Overlay */}
+      <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+    </div>
+  );
+});
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -210,7 +332,7 @@ export default function App() {
       let aiResponse;
       try {
         aiResponse = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
+          model: "gemini-2.0-flash",
           contents: {
             parts: [
               { text: prompt },
@@ -249,7 +371,7 @@ export default function App() {
         metadata: data,
       });
     } catch (error: any) {
-      console.error("ATM Generation Error:", error);
+      console.error("ATM Generation Error:", error.message || error);
       let errorMessage = error.message || "Failed to generate ATM script";
       
       if (errorMessage.includes("500") || errorMessage.includes("Media download failed")) {
@@ -549,60 +671,8 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] selection:bg-orange-500/30 selection:text-orange-200 relative">
-      {/* Dynamic Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {/* Animated Orbs */}
-        <motion.div
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-orange-600/15 blur-[120px] rounded-full"
-        />
-        <motion.div
-          animate={{
-            x: [0, -80, 0],
-            y: [0, 120, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear",
-            delay: 2,
-          }}
-          className="absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] bg-amber-600/10 blur-[150px] rounded-full"
-        />
-        <motion.div
-          animate={{
-            opacity: [0.1, 0.3, 0.1],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-orange-400/5 blur-[100px] rounded-full"
-        />
-
-        {/* Grid pattern - Enhanced visibility */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#ffffff1a_0.5px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_0%,#000_80%,transparent_100%)]" />
-
-        {/* Grain texture overlay - Enhanced visibility */}
-        <div
-          className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
+    <div className="min-h-screen bg-transparent selection:bg-orange-500/30 selection:text-orange-200 relative overflow-x-hidden">
+      <BackgroundAnimation />
 
       {/* Image Modal Preview */}
       <AnimatePresence>
@@ -700,10 +770,14 @@ export default function App() {
                   <p className="text-base md:text-lg leading-relaxed text-zinc-300 font-light italic">
                     "I bring over{" "}
                     <span className="text-white font-medium">
-                      4 years of experience
+                      6 years
                     </span>{" "}
-                    across retail and creative industries, leveraging a diverse
-                    toolkit for impactful digital storytelling."
+                    in the creative industry and{" "}
+                    <span className="text-white font-medium">
+                      2 years
+                    </span>{" "}
+                    in retail, leveraging a diverse toolkit for impactful digital
+                    storytelling."
                   </p>
                   <p className="text-zinc-400 text-xs leading-relaxed">
                     Driven by a desire to continuously adapt and learn, I thrive
@@ -1123,8 +1197,8 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="space-y-12">
-                  <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="space-y-0">
                     <h2 className="text-sm font-mono uppercase tracking-widest text-orange-500">
                       {
                         portfolioCategories.find(
@@ -1135,6 +1209,78 @@ export default function App() {
                     <h1 className="text-4xl md:text-7xl font-display font-bold text-white tracking-tighter">
                       Short Brief
                     </h1>
+                    {selectedCategory === "video" && (
+                      <motion.div 
+                        initial={{ opacity: 1, y: 0 }}
+                        animate={{ 
+                          y: [0, -10, 0],
+                        }}
+                        transition={{
+                          duration: 6,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                        className="relative z-10 w-full max-w-3xl py-0 -mt-4 -mb-6"
+                      >
+                        {/* Glow Background */}
+                        <div className="absolute inset-0 bg-orange-500/10 blur-[100px] rounded-full scale-110" />
+                        
+                        <motion.img 
+                          whileHover={{ scale: 1.05, rotateY: -10, rotateX: 5 }}
+                          src="/video-editor-header.png" 
+                          alt="Video Editor Section Header" 
+                          className="w-full h-auto object-cover relative z-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.8)]" 
+                        />
+                      </motion.div>
+                    )}
+                    {selectedCategory === "graphic" && (
+                      <motion.div 
+                        initial={{ opacity: 1, y: 0 }}
+                        animate={{ 
+                          y: [0, -10, 0],
+                        }}
+                        transition={{
+                          duration: 6,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                        className="relative z-10 w-full max-w-3xl py-0 -mt-4 -mb-6"
+                      >
+                        {/* Glow Background */}
+                        <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full scale-110" />
+                        
+                        <motion.img 
+                          whileHover={{ scale: 1.05, rotateY: -10, rotateX: 5 }}
+                          src="/video-editor-header.png" 
+                          alt="Graphic Designer Section Header" 
+                          className="w-full h-auto object-cover relative z-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.8)]" 
+                        />
+                      </motion.div>
+                    )}
+                    {selectedCategory === "content" && (
+                      <motion.div 
+                        initial={{ opacity: 1, y: 0 }}
+                        animate={{ 
+                          y: [0, -10, 0],
+                        }}
+                        transition={{
+                          duration: 6,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                        className="relative z-10 w-full max-w-3xl py-0 -mt-4 -mb-6"
+                      >
+                        {/* Glow Background */}
+                        <div className="absolute inset-0 bg-purple-500/10 blur-[100px] rounded-full scale-110" />
+                        
+                        <motion.img 
+                          whileHover={{ scale: 1.05, rotateY: 10, rotateX: 5 }}
+                          src="/content-creator-header.png" 
+                          alt="Content Creator Section Header" 
+                          className="w-full h-auto object-cover relative z-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.8)]" 
+                        />
+                      </motion.div>
+                    )}
                     <p className="text-lg md:text-xl text-zinc-400 max-w-2xl font-light italic leading-relaxed">
                       {selectedCategory === "content"
                         ? "I leverage my expertise in content creation to develop captivating soft and hard-selling content. This includes conducting thorough research, establishing optimized publishing schedules, and meticulously managing content delivery to meet established deadlines."
@@ -1507,7 +1653,7 @@ export default function App() {
                                     onPlay={() => setIsVideoPlaying(true)}
                                     onPause={() => setIsVideoPlaying(false)}
                                     onEnded={() => setIsVideoPlaying(false)}
-                                    onError={(e) => console.error("Video Error (cozyon.mp4):", e)}
+                                    onError={(e) => console.error("Video Error (cozyon.mp4)")}
                                   />
                                 {!isVideoPlaying && (
                                   <div
@@ -2080,8 +2226,29 @@ export default function App() {
                                 </button>
                               </div>
 
-                              {atmResult && (
+                               {atmResult && (
                                 <>
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-center gap-4 py-8 border-b border-white/5"
+                                  >
+                                    <div className="flex -space-x-4">
+                                      {['AMATI', 'TIRU', 'MODIFIKASI'].map((word, i) => (
+                                        <div 
+                                          key={word}
+                                          className={`relative px-6 py-2 rounded-xl border border-white/10 font-display font-bold text-xs tracking-widest ${
+                                            i === 0 ? 'bg-zinc-800 z-10' : i === 1 ? 'bg-zinc-900 z-20' : 'bg-orange-500 text-black z-30 shadow-[0_0_20px_rgba(249,115,22,0.3)]'
+                                          }`}
+                                        >
+                                          {word}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <div className="h-px flex-1 bg-white/5" />
+                                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Workflow Generated</span>
+                                  </motion.div>
+
                                   <motion.div
                                   initial={{ opacity: 0, y: 20 }}
                                   animate={{ opacity: 1, y: 0 }}
@@ -3027,14 +3194,21 @@ export default function App() {
                               </p>
                           </div>
                           
-                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                          <div className="flex flex-wrap justify-center gap-6">
                               {[
                                   "/Cozyon-Cinematicc.mp4",
                                   "/Semarak-Duell.mp4",
                                   "/Tailg-Evv.mp4",
-                                  "/Semarak-Trailer-3.mp4"
+                                  "/Semarak-Trailer-3.mp4",
+                                  "/Adele-Sample.mp4",
+                                  "/Gawey-Sample.mp4",
+                                  "/Puredew-Sample.mp4",
+                                  "/Trawlbens-Sample.mp4",
+                                  "/Truorganic-Sample-2.mp4",
+                                  "/Truorganic-Sample.mp4",
+                                  "/Truorganic-Sample-3.mp4"
                               ].map((src, i) => (
-                                  <div key={i} className="relative group/video overflow-hidden rounded-[2.5rem] bg-black border border-white/10 aspect-[9/16] w-full">
+                                  <div key={i} className="relative group/video overflow-hidden rounded-[2.5rem] bg-black border border-white/10 aspect-[9/16] w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(25%-1.5rem)] min-w-[200px]">
                                       <video
                                         className="w-full h-full object-cover opacity-60 transition-opacity duration-300 group-hover/video:opacity-100"
                                         playsInline
@@ -3140,11 +3314,8 @@ export default function App() {
         </AnimatePresence>
       </div>
 
-      {/* Decorative Elements */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px]" />
-      </div>
+      {/* Decorative Elements Removed */}
+
 
       {/* Project Detail Modal */}
       <AnimatePresence>
@@ -3410,7 +3581,7 @@ export default function App() {
                 controls
                 playsInline
                 className="w-full h-full object-cover"
-                onError={(e) => console.error("Video play error:", e)}
+                onError={(e) => console.error("Video play error")}
               />
             </motion.div>
           </motion.div>
