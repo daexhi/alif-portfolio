@@ -344,6 +344,9 @@ export default function App() {
 
       if (!analysisResponse.ok) {
         const err = await analysisResponse.json().catch(() => ({}));
+        if (analysisResponse.status === 413) {
+          throw new Error("Video Terlalu Besar: Request ke AI melebihi batas 4.5MB Vercel. Silakan gunakan video yang lebih pendek.");
+        }
         throw new Error(err.error || `AI Analysis Error: ${analysisResponse.status}`);
       }
 

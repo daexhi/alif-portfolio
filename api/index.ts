@@ -11,7 +11,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Initialize Gemini
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
@@ -78,9 +79,10 @@ app.get("/api/video-proxy", async (req, res) => {
       const base64 = Buffer.from(response.data).toString('base64');
       
       // Vercel response limit is ~4.5MB. We should check if the base64 string is too large.
-      if (base64.length > 4 * 1024 * 1024) {
+      // 3.5M characters is roughly 2.6MB, which is safe for Vercel's 4.5MB limit including overhead.
+      if (base64.length > 3.5 * 1024 * 1024) {
         return res.status(413).json({ 
-          error: "Video too large for Vercel environment. Please try a shorter video (under 30s)." 
+          error: "Video Terlalu Besar: Vercel membatasi ukuran data (4.5MB). Silakan coba video yang jauh lebih pendek (di bawah 15-20 detik)." 
         });
       }
 
