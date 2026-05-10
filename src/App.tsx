@@ -336,20 +336,29 @@ export default function App() {
       `;
 
       // 3. Call Gemini directly from frontend
-      const result = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: {
-          parts: [
-            { text: prompt },
-            {
-              inlineData: {
-                data: mediaData.data,
-                mimeType: mediaData.mimeType || "video/mp4"
+      let result;
+      try {
+        result = await ai.models.generateContent({
+          model: "gemini-2.0-flash",
+          contents: {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  data: mediaData.data,
+                  mimeType: mediaData.mimeType || "video/mp4"
+                }
               }
-            }
-          ]
+            ]
+          }
+        });
+      } catch (error: any) {
+        console.error("Gemini Error:", error);
+        if (error.message?.includes("429") || error.message?.includes("quota")) {
+          throw new Error("Kuota AI Habis: Anda telah mencapai batas penggunaan gratis Gemini untuk saat ini. Silakan coba lagi dalam 1-2 menit atau besok.");
         }
-      });
+        throw new Error(`AI Generation failed: ${error.message}`);
+      }
 
       const text = result.text;
       if (!text) throw new Error("AI returned empty response");
