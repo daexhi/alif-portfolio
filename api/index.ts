@@ -26,7 +26,25 @@ app.get("/api/tiktok-proxy", async (req, res) => {
 
   try {
     const response = await axios.get(`https://www.tikwm.com/api/?url=${videoUrl}`);
-    res.json(response.data);
+    const tikData = response.data;
+    
+    if (tikData.code !== 0) {
+      return res.status(400).json({ error: tikData.msg || "Failed to fetch TikTok data" });
+    }
+
+    const result = {
+      id: tikData.data.id,
+      videoUrl: tikData.data.play,
+      description: tikData.data.title,
+      author: {
+        nickname: tikData.data.author.nickname,
+        unique_id: tikData.data.author.unique_id
+      },
+      cover: tikData.data.cover,
+      duration: tikData.data.duration
+    };
+
+    res.json(result);
   } catch (error: any) {
     console.error("TikTok Proxy Error:", error.message);
     res.status(500).json({ error: "Failed to fetch TikTok data" });
@@ -34,7 +52,7 @@ app.get("/api/tiktok-proxy", async (req, res) => {
 });
 
 // Media Proxy (for downloading/streaming videos to avoid CORS)
-app.get("/api/proxy-media", async (req, res) => {
+app.get("/api/video-proxy", async (req, res) => {
   const { url: mediaUrl } = req.query;
 
   if (!mediaUrl || typeof mediaUrl !== 'string') {
@@ -44,29 +62,42 @@ app.get("/api/proxy-media", async (req, res) => {
   try {
     const response = await axios.get(mediaUrl, { 
       responseType: 'arraybuffer',
-      maxContentLength: 10 * 1024 * 1024, // 10MB limit
+      timeout: 25000, // 25 seconds timeout for download
+      maxContentLength: 20 * 1024 * 1024, // 20MB limit for the download itself
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+        'Accept': '*/*',
+        'Connection': 'keep-alive'
       }
     });
 
     const contentType = (response.headers['content-type'] as string) || 'video/mp4';
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Access-Control-Allow-Origin', '*');
     
     // Convert to base64 for Gemini if requested
     if (req.query.base64 === 'true') {
       const base64 = Buffer.from(response.data).toString('base64');
+      
+      // Vercel response limit is ~4.5MB. We should check if the base64 string is too large.
+      if (base64.length > 4 * 1024 * 1024) {
+        return res.status(413).json({ 
+          error: "Video too large for Vercel environment. Please try a shorter video (under 30s)." 
+        });
+      }
+
       return res.json({
         data: base64,
         mimeType: contentType
       });
     }
 
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.send(Buffer.from(response.data));
   } catch (error: any) {
     console.error("Media Proxy Error:", error.message);
-    res.status(500).json({ error: "Failed to proxy media" });
+    const statusCode = error.response?.status || 500;
+    const errorMessage = error.code === 'ECONNABORTED' ? "Download timeout" : error.message;
+    res.status(statusCode).json({ error: `Media Proxy Error: ${errorMessage} (${statusCode})` });
   }
 });
 

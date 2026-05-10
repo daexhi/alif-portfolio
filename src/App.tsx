@@ -274,11 +274,15 @@ export default function App() {
 
       // 2. Fetch media content for analysis
       const mediaResponse = await fetch(
-        `/api/proxy-media?url=${encodeURIComponent(data.videoUrl)}`,
+        `/api/video-proxy?url=${encodeURIComponent(data.videoUrl)}&base64=true`,
       );
       
       if (!mediaResponse.ok) {
-        throw new Error(`Media Proxy Error: Failed to download video (Status ${mediaResponse.status})`);
+        const errorData = await mediaResponse.json().catch(() => ({}));
+        if (mediaResponse.status === 413) {
+          throw new Error("Video Terlalu Besar: Vercel membatasi ukuran data yang diproses. Silakan coba video yang lebih pendek (di bawah 30 detik).");
+        }
+        throw new Error(errorData.error || `Media Proxy Error: Failed to download video (Status ${mediaResponse.status})`);
       }
       
       const mediaData = await mediaResponse.json();
