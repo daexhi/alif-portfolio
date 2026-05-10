@@ -51,6 +51,9 @@ import {
   Quote,
   Lightbulb,
 } from "lucide-react";
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 const BackgroundAnimation = memo(() => {
   const shapes = useMemo(() => [...Array(6)].map((_, i) => ({
@@ -290,7 +293,7 @@ export default function App() {
       if (!mediaData.data)
         throw new Error("Could not download video for analysis (Empty response)");
 
-      // 3. Call server-side analysis
+      // 3. Prepare Analysis Prompt
       const prompt = `
         Tugas Anda adalah menjadi ahli strategi konten dan transkriptor video profesional.
         Saya memberikan video TikTok dengan deskripsi: "${data.description}" oleh ${data.author?.nickname || "Unknown Creator"}.
@@ -332,25 +335,37 @@ export default function App() {
         }
       `;
 
-      const analysisResponse = await fetch("/api/analyze-video", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt,
-          videoData: mediaData.data,
-          mimeType: mediaData.mimeType
-        })
+      // 3. Call Gemini directly from frontend
+      const result = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: {
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                data: mediaData.data,
+                mimeType: mediaData.mimeType || "video/mp4"
+              }
+            }
+          ]
+        }
       });
 
-      if (!analysisResponse.ok) {
-        const err = await analysisResponse.json().catch(() => ({}));
-        if (analysisResponse.status === 413) {
-          throw new Error("Video Terlalu Besar: Request ke AI melebihi batas 4.5MB Vercel. Silakan gunakan video yang lebih pendek.");
+      const text = result.text;
+      if (!text) throw new Error("AI returned empty response");
+      
+      let parsed;
+      try {
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("Could not parse JSON from AI response");
         }
-        throw new Error(err.error || `AI Analysis Error: ${analysisResponse.status}`);
+      } catch (e) {
+        console.error("Parse error:", e, "Raw text:", text);
+        throw new Error("Format respon AI tidak valid. Silakan coba lagi.");
       }
-
-      const parsed = await analysisResponse.json();
 
       setAtmResult({
         original: parsed.original,
@@ -2285,27 +2300,27 @@ export default function App() {
                                         {
                                           icon: Play,
                                           label: "Views",
-                                          val: atmResult.metadata.stats.views.toLocaleString(),
+                                          val: (atmResult.metadata.stats?.views || 0).toLocaleString(),
                                         },
                                         {
                                           icon: Heart,
                                           label: "Likes",
-                                          val: atmResult.metadata.stats.likes.toLocaleString(),
+                                          val: (atmResult.metadata.stats?.likes || 0).toLocaleString(),
                                         },
                                         {
                                           icon: MessageCircle,
                                           label: "Comments",
-                                          val: atmResult.metadata.stats.comments.toLocaleString(),
+                                          val: (atmResult.metadata.stats?.comments || 0).toLocaleString(),
                                         },
                                         {
                                           icon: Bookmark,
                                           label: "Saves",
-                                          val: atmResult.metadata.stats.saves.toLocaleString(),
+                                          val: (atmResult.metadata.stats?.saves || 0).toLocaleString(),
                                         },
                                         {
                                           icon: Share2,
                                           label: "Shares",
-                                          val: atmResult.metadata.stats.shares.toLocaleString(),
+                                          val: (atmResult.metadata.stats?.shares || 0).toLocaleString(),
                                         },
                                         {
                                           icon: BarChart3,
@@ -2353,7 +2368,7 @@ export default function App() {
                                             Video Structure
                                           </span>
                                           <div className="flex flex-wrap gap-1 items-center">
-                                            {atmResult.structure
+                                            {(atmResult.structure || "")
                                               .split("->")
                                               .map((step, sidx) => (
                                                 <React.Fragment key={sidx}>
@@ -2361,7 +2376,7 @@ export default function App() {
                                                     {step.trim()}
                                                   </span>
                                                   {sidx <
-                                                    atmResult.structure.split(
+                                                    (atmResult.structure || "").split(
                                                       "->",
                                                     ).length -
                                                       1 && (
@@ -2578,7 +2593,7 @@ export default function App() {
                                           <div className="relative rounded-[2rem] bg-black/40 p-8 border border-white/5 text-zinc-300 leading-relaxed shadow-inner group-hover/item:border-orange-500/20 transition-colors">
                                             {item.label === "On-Screen Text (Overlay)" ? (
                                               <div className="grid grid-cols-1 gap-4">
-                                                {item.val.split("\n").filter(line => line.trim()).map((line, lidx) => {
+                                                {String(item.val || "").split("\n").filter(line => line.trim()).map((line, lidx) => {
                                                   const parts = line.split("|").map(s => s.trim());
                                                   const mainText = parts[0].replace(/^[•\-\*]\s*/, "");
                                                   const tipsText = parts.length > 1 ? parts[1] : "";
@@ -2602,7 +2617,7 @@ export default function App() {
                                               </div>
                                             ) : item.label === "Scene Sequence" ? (
                                               <div className="grid grid-cols-1 gap-4">
-                                                {item.val.split("\n").filter(line => line.trim()).map((line, lidx) => {
+                                                {String(item.val || "").split("\n").filter(line => line.trim()).map((line, lidx) => {
                                                   const parts = line.split("|").map(s => s.trim());
                                                   const title = parts[0].replace(/^[•\-\*\d\.]+\s*/, "");
                                                   const description = parts.length > 1 ? parts[1] : "";
@@ -2626,7 +2641,7 @@ export default function App() {
                                               </div>
                                             ) : (
                                               <div className="space-y-3 text-sm md:text-base">
-                                                {item.val.split("\n").filter(line => line.trim()).map((line, lidx) => (
+                                                {String(item.val || "").split("\n").filter(line => line.trim()).map((line, lidx) => (
                                                   <div key={lidx} className="flex gap-3">
                                                     <span className="text-orange-500 mt-1.5 flex-shrink-0">•</span>
                                                     <span>{line.replace(/^[•\-\*]\s*/, "")}</span>

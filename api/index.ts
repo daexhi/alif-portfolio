@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import axios from "axios";
 import { fileURLToPath } from "url";
-import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -11,22 +10,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Initialize Gemini
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 // API Proxy for TikTok with TikWM API
 app.get("/api/tiktok-proxy", async (req, res) => {
   const { url: videoUrl } = req.query;
 
-  if (!videoUrl) {
+  if (!videoUrl || typeof videoUrl !== 'string') {
     return res.status(400).json({ error: "URL is required" });
   }
 
+  // Clean URL: Extract the actual URL if it contains extra text (common in mobile sharing)
+  let cleanedUrl = videoUrl;
+  const urlMatches = videoUrl.match(/https?:\/\/[^\s]+/);
+  if (urlMatches) {
+    cleanedUrl = urlMatches[0];
+  }
+
   try {
-    const response = await axios.get(`https://www.tikwm.com/api/?url=${videoUrl}`);
+    const response = await axios.get(`https://www.tikwm.com/api/?url=${encodeURIComponent(cleanedUrl)}`);
     const tikData = response.data;
     
     if (tikData.code !== 0) {
@@ -42,7 +43,14 @@ app.get("/api/tiktok-proxy", async (req, res) => {
         unique_id: tikData.data.author.unique_id
       },
       cover: tikData.data.cover,
-      duration: tikData.data.duration
+      duration: tikData.data.duration,
+      stats: {
+        views: tikData.data.play_count || 0,
+        likes: tikData.data.digg_count || 0,
+        comments: tikData.data.comment_count || 0,
+        saves: tikData.data.collect_count || 0,
+        shares: tikData.data.share_count || 0
+      }
     };
 
     res.json(result);
@@ -100,49 +108,6 @@ app.get("/api/video-proxy", async (req, res) => {
     const statusCode = error.response?.status || 500;
     const errorMessage = error.code === 'ECONNABORTED' ? "Download timeout" : error.message;
     res.status(statusCode).json({ error: `Media Proxy Error: ${errorMessage} (${statusCode})` });
-  }
-});
-
-// Gemini Analysis Endpoint
-app.post('/api/analyze-video', async (req, res) => {
-  const { prompt, videoData, mimeType } = req.body;
-
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ error: "Gemini API key is not configured on the server." });
-  }
-
-  try {
-    const result = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: {
-        parts: [
-          { text: prompt },
-          {
-            inlineData: {
-              data: videoData,
-              mimeType: mimeType || "video/mp4"
-            }
-          }
-        ]
-      }
-    });
-
-    const text = result.text;
-    
-    // Attempt to parse JSON from response
-    try {
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        res.json(JSON.parse(jsonMatch[0]));
-      } else {
-        res.json({ text });
-      }
-    } catch (e) {
-      res.json({ text });
-    }
-  } catch (error: any) {
-    console.error('Gemini API Error:', error.message);
-    res.status(500).json({ error: `AI Generation failed: ${error.message}` });
   }
 });
 
