@@ -51,7 +51,6 @@ import {
   Quote,
   Lightbulb,
 } from "lucide-react";
-import { GoogleGenAI } from "@google/genai";
 
 const BackgroundAnimation = memo(() => {
   const shapes = useMemo(() => [...Array(6)].map((_, i) => ({
@@ -175,7 +174,7 @@ const BackgroundAnimation = memo(() => {
   );
 });
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+/* Gemini initialization moved to server-side */
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -287,7 +286,7 @@ export default function App() {
       if (!mediaData.data)
         throw new Error("Could not download video for analysis (Empty response)");
 
-      // 3. Call Gemini generation directly from frontend with video content
+      // 3. Call server-side analysis
       const prompt = `
         Tugas Anda adalah menjadi ahli strategi konten dan transkriptor video profesional.
         Saya memberikan video TikTok dengan deskripsi: "${data.description}" oleh ${data.author?.nickname || "Unknown Creator"}.
@@ -329,37 +328,22 @@ export default function App() {
         }
       `;
 
-      let aiResponse;
-      try {
-        aiResponse = await ai.models.generateContent({
-          model: "gemini-2.0-flash",
-          contents: {
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType: mediaData.mimeType || "video/mp4",
-                  data: mediaData.data,
-                },
-              },
-            ],
-          },
-        });
-      } catch (aiErr: any) {
-        throw new Error(`Gemini AI Error: ${aiErr.message || "Failed to generate content"}`);
+      const analysisResponse = await fetch("/api/analyze-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
+          videoData: mediaData.data,
+          mimeType: mediaData.mimeType
+        })
+      });
+
+      if (!analysisResponse.ok) {
+        const err = await analysisResponse.json().catch(() => ({}));
+        throw new Error(err.error || `AI Analysis Error: ${analysisResponse.status}`);
       }
 
-      const outputText = aiResponse.text;
-      if (!outputText) throw new Error("AI returned empty response");
-
-      let parsed;
-      try {
-        const cleanJson = outputText.replace(/```json|```/g, "").trim();
-        parsed = JSON.parse(cleanJson);
-      } catch (jsonErr) {
-        console.error("JSON Parse Error. Output was:", outputText);
-        throw new Error("AI response format was invalid. Please try again.");
-      }
+      const parsed = await analysisResponse.json();
 
       setAtmResult({
         original: parsed.original,
@@ -370,6 +354,7 @@ export default function App() {
         modifikasi: parsed.modifikasi,
         metadata: data,
       });
+
     } catch (error: any) {
       console.error("ATM Generation Error:", error.message || error);
       let errorMessage = error.message || "Failed to generate ATM script";
@@ -1653,7 +1638,13 @@ export default function App() {
                                     onPlay={() => setIsVideoPlaying(true)}
                                     onPause={() => setIsVideoPlaying(false)}
                                     onEnded={() => setIsVideoPlaying(false)}
-                                    onError={(e) => console.error("Video Error (cozyon.mp4)")}
+                                    onError={(e) => {
+                                      const target = e.target as HTMLVideoElement;
+                                      console.error("Video Error (cozyon.mp4):", {
+                                        src: target.src,
+                                        error: target.error
+                                      });
+                                    }}
                                   />
                                 {!isVideoPlaying && (
                                   <div
@@ -3576,12 +3567,20 @@ export default function App() {
               onClick={(e) => e.stopPropagation()}
             >
               <video
-                src={cinemaModeVideo}
+                src={cinemaModeVideo || ""}
                 autoPlay
                 controls
                 playsInline
                 className="w-full h-full object-cover"
-                onError={(e) => console.error("Video play error")}
+                onError={(e) => {
+                  const target = e.target as HTMLVideoElement;
+                  console.error("Video play error details:", {
+                    src: target.src,
+                    error: target.error,
+                    errorCode: target.error?.code,
+                    errorMessage: target.error?.message
+                  });
+                }}
               />
             </motion.div>
           </motion.div>
